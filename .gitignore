@@ -1,0 +1,11 @@
+# Ambiente virtual e cache do Python
+.venv/
+__pycache__/
+*.pyc
+
+# Configuração de IDE
+.idea/
+
+# Banco de dados local, chave de sessão e arquivos enviados pelos usuários
+# (contêm dados de uso local e uma chave secreta gerada por máquina — nunca versionar)
+instance/

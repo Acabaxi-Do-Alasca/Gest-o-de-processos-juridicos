@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import modal, seletor_processo %}
+{% block title %}{{ 'Editar prazo' if prazo else 'Novo prazo' }} · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+{% set url_fechar = url_for('detalhe_processo', processo_id=processo.id, aba='prazos') if processo else url_for('listar_prazos') %}
+{% call modal('Editar prazo' if prazo else 'Novo prazo', url_fechar) %}
+        <form method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            {{ seletor_processo(processo, processos) }}
+
+            <div class="campo">
+                <label for="descricao">Descrição</label>
+                <input type="text" id="descricao" name="descricao" placeholder="Ex.: Apresentar contestação"
+                       value="{{ prazo.descricao if prazo else '' }}" required>
+            </div>
+            <div class="campo">
+                <label for="data_prazo">Data do prazo</label>
+                <input type="date" id="data_prazo" name="data_prazo" value="{{ prazo.data_prazo if prazo else '' }}" required>
+            </div>
+            {% if usuario_logado.tipo_usuario == 'administrador' %}
+            <div class="campo mb-0">
+                <label for="id_responsavel">Responsável</label>
+                <select id="id_responsavel" name="id_responsavel" required>
+                    <option value="">Selecione</option>
+                    {% for a in advogados %}
+                    <option value="{{ a.id }}"
+                        {% if prazo and prazo.id_responsavel == a.id %}selected
+                        {% elif not prazo and processo and a.id == processo.id_advogado_responsavel %}selected{% endif %}>
+                        {{ a.nome }}{% if not a.ativo %} (inativo){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% else %}
+            <input type="hidden" name="id_responsavel" value="{{ usuario_logado.id }}">
+            {% endif %}
+
+            <div class="acoes-form">
+                <a class="btn secundario" href="{{ url_fechar }}">Cancelar</a>
+                <button class="btn" type="submit">{{ 'Salvar' if prazo else 'Salvar prazo' }}</button>
+            </div>
+        </form>
+{% endcall %}
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Acesso não autorizado · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+<div class="pagina-estado">
+    <div class="icone-estado">!</div>
+    <h1>Acesso não autorizado</h1>
+    <p>Seu perfil não possui permissão para acessar esta funcionalidade.</p>
+    <a class="btn secundario mt-4" href="{{ url_for('dashboard') }}">&larr; Voltar para o sistema</a>
+</div>
+{% endblock %}

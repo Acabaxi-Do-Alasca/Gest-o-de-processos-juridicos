@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Política de Privacidade · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+<div class="privacidade-shell">
+    {% if not usuario_logado %}
+    <a class="voltar-login" href="{{ url_for('login') }}">&larr; Voltar ao login</a>
+    {% endif %}
+
+    <h1>Política de Privacidade e Proteção de Dados</h1>
+    <div class="subtitulo">
+        {{ config_geral.nome_instituicao }} · {{ config_geral.nome_sistema }} — em conformidade com a
+        Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018).
+    </div>
+
+    <div class="card">
+        <h2>1. Quais dados tratamos</h2>
+        <p>
+            Para operar o controle de processos judiciais e administrativos, o sistema trata:
+        </p>
+        <ul>
+            <li>Dados de identificação das partes processuais (nome e, quando aplicável, CPF fictício nos dados de teste);</li>
+            <li>Dados funcionais do advogado/procurador responsável (nome, número da OAB, login de acesso);</li>
+            <li>Dados de acesso dos usuários do sistema (login e senha, armazenada apenas em formato de hash);</li>
+            <li>Dados sobre o andamento processual (situação, movimentações, documentos vinculados).</li>
+        </ul>
+        <p>
+            Não são coletados dados sensíveis (art. 5º, II, da LGPD) — como saúde, opinião política, religião
+            ou orientação sexual —, nem informações de terceiros não envolvidos no processo.
+        </p>
+    </div>
+
+    <div class="card">
+        <h2>2. Por que tratamos esses dados (finalidade e base legal)</h2>
+        <p>
+            O tratamento tem finalidade exclusivamente pública: permitir que o setor jurídico municipal
+            identifique responsáveis, cumpra prazos legais e preste contas de sua atuação. A base legal é a
+            prevista no Capítulo IV da LGPD para tratamento de dados pelo Poder Público (art. 23), combinada com
+            o cumprimento de obrigação legal e o exercício regular de direitos em processo administrativo ou
+            judicial (art. 7º, II e VI).
+        </p>
+        <p class="base-legal">Base legal: LGPD, arts. 7º, II e VI; 23 a 30.</p>
+    </div>
+
+    <div class="card">
+        <h2>3. Quem pode acessar</h2>
+        <p>
+            Somente usuários autenticados do setor jurídico municipal. O Advogado/Procurador acessa os processos
+            sob sua responsabilidade; o Administrador acessa também a gestão de usuários e o registro de
+            auditoria. Pessoas externas ao setor jurídico não possuem qualquer forma de acesso ao sistema.
+        </p>
+    </div>
+
+    <div class="card">
+        <h2>4. Como protegemos essas informações</h2>
+        <ul>
+            <li>Autenticação obrigatória por login e senha para qualquer funcionalidade;</li>
+            <li>Senhas armazenadas com hash criptográfico, nunca em texto plano;</li>
+            <li>Controle de acesso por perfil (Administrador × Advogado/Procurador);</li>
+            <li>Registro de auditoria: toda criação, alteração e exclusão fica associada ao usuário e à data/hora,
+                permitindo apurar responsabilidade em caso de uso indevido;</li>
+            <li>Uso exclusivo de dados fictícios neste ambiente acadêmico, evitando exposição de dados reais.</li>
+        </ul>
+        <p>
+            Em caso de incidente de segurança que possa acarretar risco relevante aos titulares, a Prefeitura
+            deve comunicar a Autoridade Nacional de Proteção de Dados (ANPD) e os titulares afetados, conforme
+            os arts. 46 a 49 da LGPD.
+        </p>
+    </div>
+
+    <div class="card">
+        <h2>5. Por quanto tempo guardamos os dados</h2>
+        <p>
+            Os dados de um processo são mantidos enquanto o processo estiver ativo e pelo prazo de guarda
+            aplicável a documentos públicos, conforme a tabela de temporalidade documental do órgão (Lei nº
+            8.159/1991). Encerrado esse prazo, os dados devem ser eliminados ou anonimizados, salvo hipótese
+            legal que justifique sua conservação (art. 16 da LGPD).
+        </p>
+    </div>
+
+    <div class="card">
+        <h2>6. Direitos do titular e como exercê-los</h2>
+        <p>
+            Nos termos do art. 18 da LGPD, a parte de um processo pode solicitar, a qualquer momento: confirmação
+            da existência de tratamento, acesso aos dados, correção de dados incompletos ou desatualizados,
+            informação sobre com quem os dados foram compartilhados, e eliminação de dados tratados com
+            consentimento (quando aplicável).
+        </p>
+        <p>
+            Como este é um sistema interno do setor jurídico, essas solicitações devem ser feitas diretamente ao
+            Encarregado de Dados indicado abaixo, que as encaminhará ao setor responsável.
+        </p>
+        <div class="encarregado-box">
+            <div class="rotulo">Encarregado de Dados (DPO) — art. 41 da LGPD</div>
+            <p>{{ config.encarregado_nome }}</p>
+            <p>{{ config.encarregado_contato }}</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>7. Por que não usamos dados reais</h2>
+        <p>
+            Este é um protótipo acadêmico. Todos os nomes, números de processo, CPFs e documentos exibidos são
+            fictícios, para preservar o sigilo profissional e os direitos dos cidadãos e servidores que seriam
+            envolvidos em processos reais.
+        </p>
+    </div>
+</div>
+{% endblock %}

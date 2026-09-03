@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block title %}{{ processo.numero_processo }} · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+<a class="voltar-link" href="{{ url_for('listar_processos') }}">&larr; Processos</a>
+
+<div class="page-header">
+    <div>
+        <div class="flex-row">
+            <h1>{{ processo.numero_processo }}</h1>
+            <span class="badge {{ processo.situacao|situacao_classe }}"><span class="dot"></span>{{ processo.situacao }}</span>
+        </div>
+        <div class="subtitulo">{{ processo.assunto }} · {{ processo.parte_principal }}</div>
+    </div>
+    <div class="acoes-topo">
+        <a class="btn secundario" href="{{ url_for('editar_processo', processo_id=processo.id) }}">Editar</a>
+        <button class="btn perigo" type="button" onclick="abrirConfirmacao('dialog-excluir')">Excluir</button>
+    </div>
+</div>
+
+<div class="tabs">
+    <a href="{{ url_for('detalhe_processo', processo_id=processo.id) }}" class="{{ 'ativo' if aba == 'geral' }}">Visão geral</a>
+    <a href="{{ url_for('detalhe_processo', processo_id=processo.id, aba='movimentacoes') }}" class="{{ 'ativo' if aba == 'movimentacoes' }}">Movimentações</a>
+    <a href="{{ url_for('detalhe_processo', processo_id=processo.id, aba='prazos') }}" class="{{ 'ativo' if aba == 'prazos' }}">Prazos</a>
+    <a href="{{ url_for('detalhe_processo', processo_id=processo.id, aba='documentos') }}" class="{{ 'ativo' if aba == 'documentos' }}">Documentos</a>
+</div>
+
+{% if aba == 'geral' %}
+<div class="grid-2">
+    <div class="card">
+        <div class="secao-titulo">Informações</div>
+        <div class="info-lista">
+            <div class="item-info"><div class="rotulo">Tipo</div><div class="valor">{{ processo.tipo }}</div></div>
+            <div class="item-info"><div class="rotulo">Comarca / Órgão</div><div class="valor">{{ processo.comarca_orgao }}</div></div>
+            <div class="item-info"><div class="rotulo">Data de entrada</div><div class="valor">{{ processo.data_entrada|data_extenso }}</div></div>
+            {% if processo.observacoes %}
+            <div class="item-info"><div class="rotulo">Observações</div><div class="valor">{{ processo.observacoes }}</div></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div>
+        <div class="card">
+            <div class="secao-titulo">Responsável</div>
+            <div class="flex-row">
+                <span class="avatar grande">{{ processo.advogado_nome|iniciais }}</span>
+                <div>
+                    <div class="bold">{{ processo.advogado_nome }}</div>
+                    <div class="muted">Procurador Municipal</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="secao-titulo">Próximo prazo</div>
+            {% if proximo_prazo %}
+            <div class="flex-row align-start">
+                <div class="data-grande"><div class="dia">{{ proximo_prazo.dia }}</div><div class="mes">{{ proximo_prazo.mes }}</div></div>
+                <div>
+                    <div class="bold">{{ proximo_prazo.descricao }}</div>
+                    <div class="muted">{{ proximo_prazo.situacao_texto }}</div>
+                </div>
+            </div>
+            {% else %}
+            <p class="muted">Nenhum prazo em aberto para este processo.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="secao-titulo">Última movimentação</div>
+    {% if ultima_movimentacao %}
+    <div class="timeline-data">{{ ultima_movimentacao.data|data_extenso }}</div>
+    <div class="timeline-titulo">{{ ultima_movimentacao.descricao }}</div>
+    <div class="timeline-meta">Registrado por {{ ultima_movimentacao.usuario_nome }}{% if ultima_movimentacao.hora_registro %} às {{ ultima_movimentacao.hora_registro }}{% endif %}</div>
+    {% else %}
+    <p class="muted">Nenhuma movimentação registrada nos últimos dias.</p>
+    {% endif %}
+</div>
+
+{% elif aba == 'movimentacoes' %}
+<div class="card">
+    <div class="card-header-row">
+        <h2>Movimentações</h2>
+        <a class="btn pequeno" href="{{ url_for('nova_movimentacao', processo_id=processo.id) }}">+ Registrar movimentação</a>
+    </div>
+    {% if movimentacoes %}
+    <div class="timeline">
+        {% for m in movimentacoes %}
+        <div class="timeline-item">
+            <div class="timeline-data">{{ m.data|data_extenso }}</div>
+            <div class="timeline-titulo">{{ m.descricao }}</div>
+            <div class="timeline-meta">{{ m.usuario_nome }}{% if m.hora_registro %} · {{ m.hora_registro }}{% endif %}</div>
+            <div class="acoes mt-2">
+                <a class="btn pequeno secundario" href="{{ url_for('editar_movimentacao', movimentacao_id=m.id) }}">Editar</a>
+                <button class="btn pequeno perigo" type="button" onclick="abrirConfirmacao('dialog-excluir-mov-{{ m.id }}')">Excluir</button>
+            </div>
+        </div>
+        <dialog id="dialog-excluir-mov-{{ m.id }}" class="dialog-confirmacao">
+            <h3>Excluir movimentação</h3>
+            <p>Tem certeza de que deseja excluir esta movimentação?</p>
+            <div class="numero-processo">{{ m.descricao }}</div>
+            <p class="faint">Esta ação não poderá ser desfeita.</p>
+            <form method="post" action="{{ url_for('excluir_movimentacao', movimentacao_id=m.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="acoes-form">
+                    <button class="btn secundario" type="button" onclick="fecharConfirmacao('dialog-excluir-mov-{{ m.id }}')">Cancelar</button>
+                    <button class="btn perigo" type="submit">Excluir</button>
+                </div>
+            </form>
+        </dialog>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h3>Nenhuma movimentação registrada</h3>
+        <p>Registre a primeira movimentação para começar o histórico deste processo.</p>
+        <a class="btn" href="{{ url_for('nova_movimentacao', processo_id=processo.id) }}">+ Registrar movimentação</a>
+    </div>
+    {% endif %}
+</div>
+
+{% elif aba == 'prazos' %}
+<div class="card">
+    <div class="card-header-row">
+        <h2>Prazos</h2>
+        <a class="btn pequeno" href="{{ url_for('novo_prazo', processo_id=processo.id) }}">+ Novo prazo</a>
+    </div>
+    {% if prazos %}
+    <table class="tabela-leve">
+        <thead><tr><th>Descrição</th><th>Data</th><th>Responsável</th><th>Situação</th><th></th></tr></thead>
+        <tbody>
+            {% for item in prazos %}
+            <tr>
+                <td>{{ item.prazo.descricao }}</td>
+                <td>{{ item.prazo.data_prazo|data_extenso }}</td>
+                <td>{{ item.prazo.responsavel_nome }}</td>
+                <td><span class="status {{ item.classe }}"><span class="dot"></span>{{ item.rotulo }}</span></td>
+                <td>
+                    <div class="acoes">
+                        {% if not item.prazo.cumprido %}
+                        <form method="post" action="{{ url_for('cumprir_prazo', prazo_id=item.prazo.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button class="btn pequeno secundario" type="submit">Marcar cumprido</button>
+                        </form>
+                        {% endif %}
+                        <a class="btn pequeno secundario" href="{{ url_for('editar_prazo', prazo_id=item.prazo.id) }}">Editar</a>
+                        <button class="btn pequeno perigo" type="button" onclick="abrirConfirmacao('dialog-excluir-prazo-{{ item.prazo.id }}')">Excluir</button>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% for item in prazos %}
+    <dialog id="dialog-excluir-prazo-{{ item.prazo.id }}" class="dialog-confirmacao">
+        <h3>Excluir prazo</h3>
+        <p>Tem certeza de que deseja excluir este prazo?</p>
+        <div class="numero-processo">{{ item.prazo.descricao }}</div>
+        <p class="faint">Esta ação não poderá ser desfeita.</p>
+        <form method="post" action="{{ url_for('excluir_prazo', prazo_id=item.prazo.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="acoes-form">
+                <button class="btn secundario" type="button" onclick="fecharConfirmacao('dialog-excluir-prazo-{{ item.prazo.id }}')">Cancelar</button>
+                <button class="btn perigo" type="submit">Excluir</button>
+            </div>
+        </form>
+    </dialog>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <h3>Nenhum prazo cadastrado</h3>
+        <p>Cadastre um prazo para acompanhar os compromissos deste processo.</p>
+        <a class="btn" href="{{ url_for('novo_prazo', processo_id=processo.id) }}">+ Novo prazo</a>
+    </div>
+    {% endif %}
+</div>
+
+{% elif aba == 'documentos' %}
+<div class="card">
+    <div class="card-header-row">
+        <h2>Documentos</h2>
+        <a class="btn pequeno" href="{{ url_for('novo_documento', processo_id=processo.id) }}">+ Adicionar documento</a>
+    </div>
+    {% if documentos %}
+    <div class="lista-leve">
+        {% for d in documentos %}
+        <div class="lista-item">
+            <div class="icone-doc">{{ d.nome_arquivo|extensao }}</div>
+            <div class="info">
+                {% if d.nome_arquivo %}
+                <a class="titulo" href="{{ url_for('baixar_documento', documento_id=d.id) }}" target="_blank" rel="noopener">{{ d.nome_documento }}</a>
+                {% else %}
+                <div class="titulo">{{ d.nome_documento }}</div>
+                {% endif %}
+                <div class="meta">
+                    {{ d.tipo_documento or 'Documento' }} · {{ d.data_upload|data_extenso }}
+                    {%- if d.tamanho_bytes %} · {{ d.tamanho_bytes|tamanho }}{% endif %} · Adicionado por {{ d.usuario_nome }}
+                </div>
+            </div>
+            <div class="acoes">
+                <a class="btn pequeno secundario" href="{{ url_for('editar_documento', documento_id=d.id) }}">Editar</a>
+                <button class="btn pequeno perigo" type="button" onclick="abrirConfirmacao('dialog-excluir-doc-{{ d.id }}')">Excluir</button>
+            </div>
+        </div>
+        <dialog id="dialog-excluir-doc-{{ d.id }}" class="dialog-confirmacao">
+            <h3>Excluir documento</h3>
+            <p>Tem certeza de que deseja excluir este documento? O arquivo enviado também será removido.</p>
+            <div class="numero-processo">{{ d.nome_documento }}</div>
+            <p class="faint">Esta ação não poderá ser desfeita.</p>
+            <form method="post" action="{{ url_for('excluir_documento', documento_id=d.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="acoes-form">
+                    <button class="btn secundario" type="button" onclick="fecharConfirmacao('dialog-excluir-doc-{{ d.id }}')">Cancelar</button>
+                    <button class="btn perigo" type="submit">Excluir</button>
+                </div>
+            </form>
+        </dialog>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h3>Nenhum documento registrado</h3>
+        <p>Adicione o primeiro documento relacionado a este processo.</p>
+        <a class="btn" href="{{ url_for('novo_documento', processo_id=processo.id) }}">+ Adicionar documento</a>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<dialog id="dialog-excluir" class="dialog-confirmacao">
+    <h3>Excluir processo</h3>
+    <p>Tem certeza de que deseja excluir este processo? Esta ação também remove seus prazos, movimentações e documentos.</p>
+    <div class="numero-processo">{{ processo.numero_processo }}</div>
+    <p class="faint">Esta ação não poderá ser desfeita.</p>
+    <form method="post" action="{{ url_for('excluir_processo', processo_id=processo.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="acoes-form">
+            <button class="btn secundario" type="button" onclick="fecharConfirmacao('dialog-excluir')">Cancelar</button>
+            <button class="btn perigo" type="submit">Excluir</button>
+        </div>
+    </form>
+</dialog>
+{% endblock %}

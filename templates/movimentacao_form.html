@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import modal, seletor_processo %}
+{% block title %}{{ 'Editar movimentação' if movimentacao else 'Nova movimentação' }} · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+{% set url_fechar = url_for('detalhe_processo', processo_id=processo.id, aba='movimentacoes') if processo else url_for('listar_movimentacoes') %}
+{% call modal('Editar movimentação' if movimentacao else 'Registrar movimentação', url_fechar) %}
+        <form method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            {{ seletor_processo(processo, processos) }}
+
+            <div class="campo">
+                <label for="descricao">Tipo / descrição</label>
+                <input list="sugestoes" type="text" id="descricao" name="descricao"
+                       value="{{ movimentacao.descricao if movimentacao else '' }}" required>
+                <datalist id="sugestoes">
+                    {% for s in sugestoes %}
+                    <option value="{{ s }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+            <div class="campo mb-0">
+                <label for="data">Data</label>
+                <input type="date" id="data" name="data" value="{{ movimentacao.data if movimentacao else '' }}" required>
+            </div>
+
+            <div class="acoes-form">
+                <a class="btn secundario" href="{{ url_fechar }}">Cancelar</a>
+                <button class="btn" type="submit">{{ 'Salvar' if movimentacao else 'Registrar' }}</button>
+            </div>
+        </form>
+{% endcall %}
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% from "_macros.html" import paginacao %}
+{% block title %}Documentos · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Documentos</h1>
+        <div class="subtitulo">Arquivos relacionados aos processos.</div>
+    </div>
+    <div class="acoes-topo">
+        <a class="btn" href="{{ url_for('novo_documento') }}">+ Adicionar documento</a>
+    </div>
+</div>
+
+<form method="get" class="form-busca">
+    <input type="text" name="q" placeholder="Buscar documento ou processo..." value="{{ q }}">
+    <button class="btn secundario" type="submit">Buscar</button>
+</form>
+
+<div class="card">
+    {% if documentos %}
+    <div class="lista-leve">
+        {% for d in documentos %}
+        <div class="lista-item">
+            <div class="icone-doc">{{ d.nome_arquivo|extensao }}</div>
+            <div class="info">
+                {% if d.nome_arquivo %}
+                <a class="titulo" href="{{ url_for('baixar_documento', documento_id=d.id) }}" target="_blank" rel="noopener">{{ d.nome_documento }}</a>
+                {% else %}
+                <div class="titulo">{{ d.nome_documento }}</div>
+                {% endif %}
+                <div class="meta">
+                    <a href="{{ url_for('detalhe_processo', processo_id=d.id_processo) }}">{{ d.numero_processo }}</a>
+                    · {{ d.tipo_documento or 'Documento' }} · {{ d.data_upload|data_extenso }}
+                    {%- if d.tamanho_bytes %} · {{ d.tamanho_bytes|tamanho }}{% endif %} · Adicionado por {{ d.usuario_nome }}
+                </div>
+            </div>
+            <div class="acoes">
+                <a class="btn pequeno secundario" href="{{ url_for('editar_documento', documento_id=d.id) }}">Editar</a>
+                <button class="btn pequeno perigo" type="button" onclick="abrirConfirmacao('dialog-excluir-doc-{{ d.id }}')">Excluir</button>
+            </div>
+        </div>
+        <dialog id="dialog-excluir-doc-{{ d.id }}" class="dialog-confirmacao">
+            <h3>Excluir documento</h3>
+            <p>Tem certeza de que deseja excluir este documento? O arquivo enviado também será removido.</p>
+            <div class="numero-processo">{{ d.nome_documento }}</div>
+            <p class="faint">Esta ação não poderá ser desfeita.</p>
+            <form method="post" action="{{ url_for('excluir_documento', documento_id=d.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="acoes-form">
+                    <button class="btn secundario" type="button" onclick="fecharConfirmacao('dialog-excluir-doc-{{ d.id }}')">Cancelar</button>
+                    <button class="btn perigo" type="submit">Excluir</button>
+                </div>
+            </form>
+        </dialog>
+        {% endfor %}
+    </div>
+    {{ paginacao('listar_documentos', pagina, tem_proxima) }}
+    {% else %}
+    <div class="empty-state">
+        {% if q %}
+        <h3>Nenhum documento encontrado</h3>
+        <p>Não encontramos resultados para “{{ q }}”.</p>
+        {% else %}
+        <h3>Nenhum documento registrado</h3>
+        <p>Os documentos adicionados aos processos aparecerão aqui.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

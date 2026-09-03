@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% from "_macros.html" import paginacao %}
+{% block title %}Prazos · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Prazos</h1>
+        <div class="subtitulo">Controle de compromissos processuais.</div>
+    </div>
+    <div class="acoes-topo">
+        <a class="btn" href="{{ url_for('novo_prazo') }}">+ Novo prazo</a>
+    </div>
+</div>
+
+<div class="stat-grid compacto">
+    <div class="stat-card">
+        <div class="value">{{ contagem.no_prazo }}</div>
+        <div class="label">No prazo</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">{{ contagem.proximos }}</div>
+        <div class="label">Próximos</div>
+    </div>
+    <div class="stat-card">
+        <div class="value destaque-vencido">{{ contagem.vencidos }}</div>
+        <div class="label">Vencidos</div>
+    </div>
+</div>
+
+{% if secoes %}
+    {% for titulo, itens, classe in secoes %}
+    <div class="card">
+        <div class="secao-titulo">{{ titulo|upper }}</div>
+        <div class="lista-leve">
+            {% for item in itens %}
+            <div class="lista-item">
+                <div class="info">
+                    <div class="titulo">
+                        <a href="{{ url_for('detalhe_processo', processo_id=item.prazo.id_processo) }}">{{ item.prazo.numero_processo }}</a>
+                    </div>
+                    <div class="meta">{{ item.prazo.descricao }} · {{ item.prazo.responsavel_nome }}</div>
+                </div>
+                <span class="status {{ classe }}"><span class="dot"></span>{{ item.rotulo }}</span>
+                <div class="acoes">
+                    <form method="post" action="{{ url_for('cumprir_prazo', prazo_id=item.prazo.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <input type="hidden" name="origem" value="prazos">
+                        <button class="btn pequeno secundario" type="submit">Marcar cumprido</button>
+                    </form>
+                    <a class="btn pequeno secundario" href="{{ url_for('editar_prazo', prazo_id=item.prazo.id) }}">Editar</a>
+                    <button class="btn pequeno perigo" type="button" onclick="abrirConfirmacao('dialog-excluir-prazo-{{ item.prazo.id }}')">Excluir</button>
+                </div>
+            </div>
+            <dialog id="dialog-excluir-prazo-{{ item.prazo.id }}" class="dialog-confirmacao">
+                <h3>Excluir prazo</h3>
+                <p>Tem certeza de que deseja excluir este prazo?</p>
+                <div class="numero-processo">{{ item.prazo.descricao }}</div>
+                <p class="faint">Esta ação não poderá ser desfeita.</p>
+                <form method="post" action="{{ url_for('excluir_prazo', prazo_id=item.prazo.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="origem" value="prazos">
+                    <div class="acoes-form">
+                        <button class="btn secundario" type="button" onclick="fecharConfirmacao('dialog-excluir-prazo-{{ item.prazo.id }}')">Cancelar</button>
+                        <button class="btn perigo" type="submit">Excluir</button>
+                    </div>
+                </form>
+            </dialog>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+    {{ paginacao('listar_prazos', pagina, tem_proxima) }}
+{% else %}
+<div class="card">
+    <div class="empty-state">
+        <h3>Nenhum prazo em aberto</h3>
+        <p>Todos os prazos cadastrados já foram cumpridos.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

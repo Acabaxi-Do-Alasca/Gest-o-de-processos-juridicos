@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{{ config_geral.nome_sistema }}{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% if usuario_logado %}
+    <div class="app-shell">
+        <div class="sidebar-backdrop" onclick="fecharMenuMobile()"></div>
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="instituicao">{{ config_geral.nome_instituicao }}</div>
+                <div class="sistema">{{ config_geral.nome_sistema }}</div>
+                <button type="button" class="menu-fechar" onclick="fecharMenuMobile()" aria-label="Fechar menu">&times;</button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="{{ 'ativo' if request.endpoint == 'dashboard' }}">
+                    <span class="icone">&#9679;</span> Visão geral
+                </a>
+                <a href="{{ url_for('listar_processos') }}" class="{{ 'ativo' if request.endpoint in ['listar_processos','novo_processo','detalhe_processo','editar_processo'] }}">
+                    <span class="icone">&#9633;</span> Processos
+                </a>
+                <a href="{{ url_for('listar_prazos') }}" class="{{ 'ativo' if request.endpoint in ['listar_prazos','novo_prazo'] }}">
+                    <span class="icone">&#9202;</span> Prazos
+                </a>
+                <a href="{{ url_for('listar_movimentacoes') }}" class="{{ 'ativo' if request.endpoint in ['listar_movimentacoes','nova_movimentacao'] }}">
+                    <span class="icone">&#8623;</span> Movimentações
+                </a>
+                <a href="{{ url_for('listar_documentos') }}" class="{{ 'ativo' if request.endpoint in ['listar_documentos','novo_documento'] }}">
+                    <span class="icone">&#128196;</span> Documentos
+                </a>
+
+                {% if usuario_logado.tipo_usuario == 'administrador' %}
+                <div class="grupo-label">Administração</div>
+                <a href="{{ url_for('listar_usuarios') }}" class="{{ 'ativo' if request.endpoint in ['listar_usuarios','novo_usuario'] }}">
+                    <span class="icone">&#128100;</span> Usuários
+                </a>
+                <a href="{{ url_for('listar_auditoria') }}" class="{{ 'ativo' if request.endpoint == 'listar_auditoria' }}">
+                    <span class="icone">&#128269;</span> Auditoria
+                </a>
+                <a href="{{ url_for('configuracoes') }}" class="{{ 'ativo' if request.endpoint == 'configuracoes' }}">
+                    <span class="icone">&#9881;</span> Configurações
+                </a>
+                {% endif %}
+            </nav>
+
+            <div class="sidebar-footer">
+                <details class="user-menu">
+                    <summary>
+                        <span class="avatar">{{ usuario_logado.nome|iniciais }}</span>
+                        <span>
+                            <span class="nome-usuario">{{ usuario_logado.nome }}</span>
+                            <span class="papel-usuario">{{ 'Administrador' if usuario_logado.tipo_usuario == 'administrador' else 'Procurador Municipal' }}</span>
+                        </span>
+                    </summary>
+                    <div class="user-menu-panel">
+                        <a href="{{ url_for('perfil') }}">Meu perfil</a>
+                        <a href="{{ url_for('perfil') }}#senha">Alterar senha</a>
+                        <div class="ultimo-acesso">
+                            Último acesso<br>
+                            {{ ultimo_acesso_anterior or 'primeiro acesso' }}
+                        </div>
+                        <hr>
+                        <a href="{{ url_for('logout') }}">Sair</a>
+                    </div>
+                </details>
+            </div>
+        </aside>
+
+        <main class="main">
+    {% endif %}
+            {% if usuario_logado %}
+            <div class="mobile-topbar">
+                <button type="button" class="menu-toggle" onclick="abrirMenuMobile()" aria-label="Abrir menu">
+                    <span class="icone">&#9776;</span> Menu
+                </button>
+            </div>
+            {% endif %}
+            <div class="toast-container">
+                {% with mensagens = get_flashed_messages(with_categories=true) %}
+                    {% for categoria, mensagem in mensagens %}
+                    <div class="toast {{ categoria }}">
+                        <span class="icone">{{ '✓' if categoria == 'sucesso' else '!' }}</span>
+                        <span>{{ mensagem }}</span>
+                    </div>
+                    {% endfor %}
+                {% endwith %}
+            </div>
+            {% block content %}{% endblock %}
+            <footer class="app-footer">
+                <span>{{ config_geral.nome_instituicao }} · dados fictícios, uso exclusivamente didático.</span>
+                <a href="{{ url_for('privacidade') }}">Política de Privacidade e Proteção de Dados (LGPD)</a>
+            </footer>
+    {% if usuario_logado %}
+        </main>
+    </div>
+    {% endif %}
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

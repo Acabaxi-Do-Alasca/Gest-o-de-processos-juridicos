@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Sessão expirada · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+<div class="pagina-estado">
+    <div class="icone-estado">!</div>
+    <h1>Sessão expirada ou formulário inválido</h1>
+    <p>
+        Por segurança (proteção contra CSRF), esta ação não pôde ser confirmada. Isso costuma
+        acontecer quando a página fica aberta por muito tempo antes de enviar o formulário.
+        Recarregue a página e tente novamente.
+    </p>
+    <a class="btn secundario mt-4" href="{{ url_for('dashboard') if usuario_logado else url_for('login') }}">&larr; Voltar</a>
+</div>
+{% endblock %}

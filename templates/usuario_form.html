@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "_macros.html" import modal %}
+{% block title %}{{ 'Editar usuário' if usuario else 'Novo usuário' }} · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+{% call modal('Editar usuário' if usuario else 'Novo usuário', url_for('listar_usuarios')) %}
+        <form method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="campo">
+                <label for="nome">Nome completo</label>
+                <input type="text" id="nome" name="nome" value="{{ usuario.nome if usuario else '' }}" required>
+            </div>
+            <div class="campo">
+                <label for="login">Usuário</label>
+                <input type="text" id="login" name="login" value="{{ usuario.login if usuario else '' }}" required>
+            </div>
+            {% if not usuario %}
+            <div class="campo">
+                <label for="senha">Senha inicial</label>
+                <input type="password" id="senha" name="senha" required>
+            </div>
+            {% else %}
+            <div class="campo">
+                <label>Senha</label>
+                <div class="ajuda">Use "Redefinir senha" na lista de usuários para alterá-la.</div>
+            </div>
+            {% endif %}
+            <div class="campo">
+                <label for="tipo_usuario">Perfil</label>
+                <select id="tipo_usuario" name="tipo_usuario" required>
+                    <option value="advogado" {% if usuario and usuario.tipo_usuario == 'advogado' %}selected{% endif %}>Advogado/Procurador</option>
+                    <option value="administrador" {% if usuario and usuario.tipo_usuario == 'administrador' %}selected{% endif %}>Administrador</option>
+                </select>
+                {% if usuario and usuario.id == usuario_logado.id %}
+                <div class="ajuda">Você não pode remover o próprio perfil de administrador.</div>
+                {% endif %}
+            </div>
+            <div class="campo mb-0">
+                <label for="oab">OAB (se aplicável)</label>
+                <input type="text" id="oab" name="oab" value="{{ usuario.oab if usuario else '' }}">
+            </div>
+
+            <div class="acoes-form">
+                <a class="btn secundario" href="{{ url_for('listar_usuarios') }}">Cancelar</a>
+                <button class="btn" type="submit">{{ 'Salvar' if usuario else 'Criar usuário' }}</button>
+            </div>
+        </form>
+{% endcall %}
+{% endblock %}

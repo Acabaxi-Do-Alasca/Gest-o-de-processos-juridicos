@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Página não encontrada · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+<div class="pagina-estado">
+    <div class="icone-estado">?</div>
+    <h1>Página não encontrada</h1>
+    <p>
+        O link que você acessou pode estar quebrado, ou o registro pode ter sido removido por
+        outra pessoa. Volte e tente novamente.
+    </p>
+    <a class="btn secundario mt-4" href="{{ url_for('dashboard') if usuario_logado else url_for('login') }}">&larr; Voltar</a>
+</div>
+{% endblock %}

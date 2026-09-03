@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Entrar · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+<div class="login-shell">
+    <div class="login-identidade">
+        <div class="grafismo"></div>
+        <div class="brasao">⚖</div>
+        <div class="instituicao">{{ config_geral.nome_instituicao }}</div>
+        <h1>{{ config_geral.nome_sistema }}</h1>
+        <p>Processos, prazos e informações jurídicas organizados em um único ambiente seguro.</p>
+    </div>
+    <div class="login-form-area">
+        <div class="login-form-card">
+            <h2>Acesse sua conta</h2>
+            <form method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="campo">
+                    <label for="login">Usuário</label>
+                    <input type="text" id="login" name="login" required autofocus>
+                </div>
+                <div class="campo">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" name="senha" required>
+                </div>
+                <button class="btn" type="submit">Entrar</button>
+            </form>
+            <p class="rodape-login">Esqueceu sua senha? Peça a um administrador para redefini-la em Usuários.</p>
+            <p class="rodape-login">Ambiente de acesso restrito aos servidores autorizados.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% from "_macros.html" import paginacao %}
+{% block title %}Processos · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Processos</h1>
+        <div class="subtitulo">
+            {{ total }} processo{{ 's' if total != 1 }}
+            {{ 'cadastrado' if usuario_logado.tipo_usuario == 'administrador' else 'sob sua responsabilidade' }}{{ 's' if total != 1 and usuario_logado.tipo_usuario == 'administrador' }}
+        </div>
+    </div>
+    <div class="acoes-topo">
+        <a class="btn" href="{{ url_for('novo_processo') }}">+ Novo processo</a>
+    </div>
+</div>
+
+<form method="get">
+<div class="form-busca">
+    <input type="text" name="q" placeholder="Buscar por processo, parte ou responsável..." value="{{ filtros.q }}">
+    <details class="filtros-details">
+        <summary><span class="btn secundario">Filtros</span></summary>
+        <div class="painel-filtros">
+            <h3>Filtros</h3>
+            {% if usuario_logado.tipo_usuario == 'administrador' %}
+            <div class="campo">
+                <label for="advogado_id">Responsável</label>
+                <select id="advogado_id" name="advogado_id">
+                    <option value="">Todos</option>
+                    {% for a in advogados %}
+                    <option value="{{ a.id }}" {% if filtros.advogado_id|string == a.id|string %}selected{% endif %}>{{ a.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            <div class="campo mb-0">
+                <label for="situacao_exata">Situação</label>
+                <select id="situacao_exata" name="situacao">
+                    <option value="">Todas</option>
+                    {% for s in situacoes_processo %}
+                    <option value="{{ s }}" {% if filtros.situacao == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="acoes-form">
+                <a class="btn fantasma pequeno" href="{{ url_for('listar_processos') }}">Limpar filtros</a>
+                <button class="btn pequeno" type="submit">Aplicar filtros</button>
+            </div>
+        </div>
+    </details>
+    <button class="btn secundario" type="submit">Buscar</button>
+</div>
+</form>
+
+<div class="status-tabs">
+    <a href="{{ url_for('listar_processos') }}" class="{{ 'ativo' if not filtros.situacao }}">Todos</a>
+    <a href="{{ url_for('listar_processos', situacao='Em andamento') }}" class="{{ 'ativo' if filtros.situacao == 'Em andamento' }}">Em andamento</a>
+    <a href="{{ url_for('listar_processos', situacao='Aguardando') }}" class="{{ 'ativo' if filtros.situacao == 'Aguardando' }}">Aguardando</a>
+    <a href="{{ url_for('listar_processos', situacao='Encerrado') }}" class="{{ 'ativo' if filtros.situacao == 'Encerrado' }}">Encerrados</a>
+</div>
+
+<div class="card">
+    {% if processos %}
+    <table class="tabela-leve">
+        <thead>
+            <tr>
+                <th>Processo</th><th>Parte</th><th>Responsável</th><th>Situação</th>
+                <th>Última movimentação</th><th>Próximo prazo</th><th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in processos %}
+            <tr>
+                <td>
+                    <a class="celula-principal" href="{{ url_for('detalhe_processo', processo_id=p.id) }}">{{ p.numero_processo }}</a>
+                    <span class="celula-secundaria">{{ p.assunto }}</span>
+                </td>
+                <td>{{ p.parte_principal }}</td>
+                <td>{{ p.advogado_nome }}</td>
+                <td><span class="badge {{ p.situacao|situacao_classe }}"><span class="dot"></span>{{ p.situacao }}</span></td>
+                <td>{{ p.ultima_movimentacao|data_extenso if p.ultima_movimentacao else '—' }}</td>
+                <td>{{ p.proximo_prazo|data_extenso if p.proximo_prazo else '—' }}</td>
+                <td><a class="btn pequeno secundario" href="{{ url_for('detalhe_processo', processo_id=p.id) }}">Ver</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {{ paginacao('listar_processos', pagina, tem_proxima) }}
+    {% else %}
+    <div class="empty-state">
+        {% if filtros.q or filtros.advogado_id or filtros.situacao %}
+        <h3>Nenhum processo encontrado</h3>
+        <p>Não encontramos resultados para os filtros aplicados. Tente alterar o termo de busca ou limpar os filtros.</p>
+        <a class="btn secundario" href="{{ url_for('listar_processos') }}">Limpar filtros</a>
+        {% else %}
+        <h3>Nenhum processo cadastrado</h3>
+        <p>Cadastre o primeiro processo para começar a acompanhar informações e prazos.</p>
+        <a class="btn" href="{{ url_for('novo_processo') }}">+ Cadastrar processo</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Arquivo muito grande · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+<div class="pagina-estado">
+    <div class="icone-estado">!</div>
+    <h1>Arquivo muito grande</h1>
+    <p>
+        O arquivo enviado ultrapassa o limite de 20 MB por documento. Reduza o tamanho do
+        arquivo (ou divida-o em partes) e tente enviar novamente.
+    </p>
+    <a class="btn secundario mt-4" href="{{ url_for('dashboard') if usuario_logado else url_for('login') }}">&larr; Voltar</a>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% macro modal(titulo, url_fechar) %}
+<div class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2>{{ titulo }}</h2>
+            <a class="fechar" href="{{ url_fechar }}">&times;</a>
+        </div>
+        {{ caller() }}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro paginacao(endpoint, pagina, tem_proxima) %}
+{% if pagina > 1 or tem_proxima %}
+<div class="paginacao">
+    {% if pagina > 1 %}
+    <a class="btn pequeno secundario" href="{{ url_for(endpoint, **dict(request.args, pagina=pagina - 1)) }}">&larr; Anterior</a>
+    {% else %}
+    <span></span>
+    {% endif %}
+    <span class="pagina-atual">Página {{ pagina }}</span>
+    {% if tem_proxima %}
+    <a class="btn pequeno secundario" href="{{ url_for(endpoint, **dict(request.args, pagina=pagina + 1)) }}">Próxima &rarr;</a>
+    {% else %}
+    <span></span>
+    {% endif %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro seletor_processo(processo, processos) %}
+{% if processo %}
+<div class="contexto">Processo: <strong>{{ processo.numero_processo }}</strong></div>
+<input type="hidden" name="id_processo" value="{{ processo.id }}">
+{% else %}
+<div class="campo">
+    <label for="id_processo">Processo</label>
+    <select id="id_processo" name="id_processo" required>
+        <option value="">Selecione o processo</option>
+        {% for p in processos %}
+        <option value="{{ p.id }}">{{ p.numero_processo }} — {{ p.assunto }}</option>
+        {% endfor %}
+    </select>
+</div>
+{% endif %}
+{% endmacro %}

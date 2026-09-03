@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import modal, seletor_processo %}
+{% block title %}{{ 'Editar documento' if documento else 'Novo documento' }} · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+{% set url_fechar = url_for('detalhe_processo', processo_id=processo.id, aba='documentos') if processo else url_for('listar_documentos') %}
+{% call modal('Editar documento' if documento else 'Adicionar documento', url_fechar) %}
+        <form method="post" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            {{ seletor_processo(processo, processos) }}
+
+            <div class="campo">
+                <label for="nome_documento">Nome do documento</label>
+                <input type="text" id="nome_documento" name="nome_documento" placeholder="Ex.: Petição inicial"
+                       value="{{ documento.nome_documento if documento else '' }}" required>
+            </div>
+            <div class="campo">
+                <label for="tipo_documento">Tipo</label>
+                <input type="text" id="tipo_documento" name="tipo_documento" placeholder="Intimação / Petição / Decisão / Sentença"
+                       value="{{ documento.tipo_documento if documento else '' }}">
+            </div>
+            <div class="campo">
+                <label for="arquivo">Arquivo</label>
+                <input type="file" id="arquivo" name="arquivo" accept=".pdf,.doc,.docx" {{ '' if documento else 'required' }}>
+                {% if documento %}
+                <div class="ajuda">
+                    Arquivo atual: {{ documento.nome_arquivo|extensao }}{% if documento.tamanho_bytes %} · {{ documento.tamanho_bytes|tamanho }}{% endif %}.
+                    Selecione um novo arquivo apenas se quiser substituí-lo.
+                </div>
+                {% else %}
+                <div class="ajuda">Formatos aceitos: PDF, DOC ou DOCX (máx. 20 MB).</div>
+                {% endif %}
+            </div>
+            <div class="campo mb-0">
+                <label for="descricao">Descrição</label>
+                <textarea id="descricao" name="descricao" rows="3">{{ documento.descricao if documento else '' }}</textarea>
+            </div>
+
+            <div class="acoes-form">
+                <a class="btn secundario" href="{{ url_fechar }}">Cancelar</a>
+                <button class="btn" type="submit">{{ 'Salvar' if documento else 'Adicionar' }}</button>
+            </div>
+        </form>
+{% endcall %}
+{% endblock %}

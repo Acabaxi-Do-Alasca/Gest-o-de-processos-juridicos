@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Usuários · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Usuários</h1>
+        <div class="subtitulo">Gerencie usuários e permissões do sistema.</div>
+    </div>
+    <div class="acoes-topo">
+        <a class="btn" href="{{ url_for('novo_usuario') }}">+ Novo usuário</a>
+    </div>
+</div>
+
+<div class="card">
+    <table class="tabela-leve">
+        <thead><tr><th>Nome</th><th>Perfil</th><th>OAB</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+            {% for u in usuarios %}
+            <tr>
+                <td>
+                    <div class="flex-row">
+                        <span class="avatar">{{ u.nome|iniciais }}</span>
+                        <div>
+                            <div class="celula-principal">{{ u.nome }}</div>
+                            <span class="celula-secundaria">{{ u.login }}</span>
+                        </div>
+                    </div>
+                </td>
+                <td>{{ 'Administrador' if u.tipo_usuario == 'administrador' else 'Procurador' }}</td>
+                <td>{{ u.oab or '—' }}</td>
+                <td>
+                    {% if u.ativo %}
+                    <span class="badge badge-ativo"><span class="dot"></span>Ativo</span>
+                    {% else %}
+                    <span class="badge badge-inativo"><span class="dot"></span>Inativo</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="acoes">
+                        <a class="btn pequeno secundario" href="{{ url_for('editar_usuario', usuario_id=u.id) }}">Editar</a>
+                        <button class="btn pequeno secundario" type="button" onclick="abrirConfirmacao('dialog-redefinir-senha-{{ u.id }}')">Redefinir senha</button>
+                        {% if u.id != usuario_logado.id %}
+                        <form method="post" action="{{ url_for('alternar_status_usuario', usuario_id=u.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button class="btn pequeno secundario" type="submit">{{ 'Desativar' if u.ativo else 'Ativar' }}</button>
+                        </form>
+                        {% else %}
+                        <span class="muted">(você)</span>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% for u in usuarios %}
+<dialog id="dialog-redefinir-senha-{{ u.id }}" class="dialog-confirmacao">
+    <h3>Redefinir senha</h3>
+    <p>Defina uma nova senha para este usuário. Ele não precisará informar a senha atual.</p>
+    <div class="numero-processo">{{ u.nome }}</div>
+    <form method="post" action="{{ url_for('redefinir_senha_usuario', usuario_id=u.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="campo">
+            <label for="nova_senha_{{ u.id }}">Nova senha</label>
+            <input type="password" id="nova_senha_{{ u.id }}" name="nova_senha" minlength="6" required>
+        </div>
+        <div class="campo mb-0">
+            <label for="confirmar_senha_{{ u.id }}">Confirmar nova senha</label>
+            <input type="password" id="confirmar_senha_{{ u.id }}" name="confirmar_senha" minlength="6" required>
+        </div>
+        <div class="acoes-form">
+            <button class="btn secundario" type="button" onclick="fecharConfirmacao('dialog-redefinir-senha-{{ u.id }}')">Cancelar</button>
+            <button class="btn" type="submit">Redefinir senha</button>
+        </div>
+    </form>
+</dialog>
+{% endfor %}
+{% endblock %}

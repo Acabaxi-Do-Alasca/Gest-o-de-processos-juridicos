@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "_macros.html" import paginacao %}
+{% block title %}Movimentações · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Movimentações</h1>
+        <div class="subtitulo">Histórico recente de todos os processos.</div>
+    </div>
+    <div class="acoes-topo">
+        <a class="btn" href="{{ url_for('nova_movimentacao') }}">+ Movimentação</a>
+    </div>
+</div>
+
+<form method="get" class="form-busca">
+    <input type="text" name="q" placeholder="Buscar movimentação ou processo..." value="{{ q }}">
+    <button class="btn secundario" type="submit">Buscar</button>
+</form>
+
+<div class="card">
+    {% if movimentacoes %}
+    <div class="timeline">
+        {% for m in movimentacoes %}
+        <div class="timeline-item">
+            <div class="timeline-data">{{ m.data|data_extenso }}</div>
+            <div class="timeline-titulo">{{ m.descricao }}</div>
+            <div class="timeline-desc">
+                <a href="{{ url_for('detalhe_processo', processo_id=m.id_processo) }}">{{ m.numero_processo }}</a>
+            </div>
+            <div class="timeline-meta">{{ m.usuario_nome }}{% if m.hora_registro %} · {{ m.hora_registro }}{% endif %}</div>
+            <div class="acoes mt-2">
+                <a class="btn pequeno secundario" href="{{ url_for('editar_movimentacao', movimentacao_id=m.id) }}">Editar</a>
+                <button class="btn pequeno perigo" type="button" onclick="abrirConfirmacao('dialog-excluir-mov-{{ m.id }}')">Excluir</button>
+            </div>
+        </div>
+        <dialog id="dialog-excluir-mov-{{ m.id }}" class="dialog-confirmacao">
+            <h3>Excluir movimentação</h3>
+            <p>Tem certeza de que deseja excluir esta movimentação?</p>
+            <div class="numero-processo">{{ m.descricao }}</div>
+            <p class="faint">Esta ação não poderá ser desfeita.</p>
+            <form method="post" action="{{ url_for('excluir_movimentacao', movimentacao_id=m.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="acoes-form">
+                    <button class="btn secundario" type="button" onclick="fecharConfirmacao('dialog-excluir-mov-{{ m.id }}')">Cancelar</button>
+                    <button class="btn perigo" type="submit">Excluir</button>
+                </div>
+            </form>
+        </dialog>
+        {% endfor %}
+    </div>
+    {{ paginacao('listar_movimentacoes', pagina, tem_proxima) }}
+    {% else %}
+    <div class="empty-state">
+        {% if q %}
+        <h3>Nenhuma movimentação encontrada</h3>
+        <p>Não encontramos resultados para “{{ q }}”.</p>
+        {% else %}
+        <h3>Nenhuma movimentação registrada</h3>
+        <p>As movimentações registradas nos processos aparecerão aqui.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

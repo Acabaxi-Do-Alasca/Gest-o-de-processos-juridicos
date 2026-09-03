@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar processo' if processo else 'Novo processo' }} · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+<a class="voltar-link" href="{{ url_for('detalhe_processo', processo_id=processo.id) if processo else url_for('listar_processos') }}">&larr; {{ 'Processo' if processo else 'Processos' }}</a>
+
+<div class="page-header">
+    <div>
+        <h1>{{ 'Editar processo' if processo else 'Novo processo' }}</h1>
+        <div class="subtitulo">Cadastre as informações principais do processo.</div>
+    </div>
+</div>
+
+<form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="card">
+        <div class="secao-bloco">
+            <div class="secao-titulo">Identificação</div>
+            <div class="campo">
+                <label for="numero_processo">Número do processo</label>
+                <input type="text" id="numero_processo" name="numero_processo" placeholder="0001234-56.2026.8.00.0001"
+                       value="{{ processo.numero_processo if processo else '' }}" required>
+            </div>
+            <div class="form-grid">
+                <div class="campo">
+                    <label for="tipo">Tipo</label>
+                    <input type="text" id="tipo" name="tipo" placeholder="Judicial / Administrativo"
+                           value="{{ processo.tipo if processo else '' }}" required>
+                </div>
+                <div class="campo">
+                    <label for="assunto">Assunto</label>
+                    <input type="text" id="assunto" name="assunto" value="{{ processo.assunto if processo else '' }}" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="secao-bloco">
+            <div class="secao-titulo">Parte e tramitação</div>
+            <div class="form-grid">
+                <div class="campo">
+                    <label for="parte_principal">Parte principal</label>
+                    <input type="text" id="parte_principal" name="parte_principal" value="{{ processo.parte_principal if processo else '' }}" required>
+                </div>
+                <div class="campo">
+                    <label for="comarca_orgao">Comarca / Órgão</label>
+                    <input type="text" id="comarca_orgao" name="comarca_orgao" value="{{ processo.comarca_orgao if processo else '' }}" required>
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="campo">
+                    <label for="data_entrada">Data de entrada</label>
+                    <input type="date" id="data_entrada" name="data_entrada" value="{{ processo.data_entrada if processo else '' }}" required>
+                </div>
+                <div class="campo">
+                    <label for="situacao">Situação</label>
+                    <select id="situacao" name="situacao" required>
+                        {% for s in situacoes_processo %}
+                        <option value="{{ s }}" {% if processo and processo.situacao == s or (not processo and s == 'Em andamento') %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="secao-bloco">
+            <div class="secao-titulo">Responsabilidade</div>
+            {% if usuario_logado.tipo_usuario == 'administrador' %}
+            <div class="campo mb-0">
+                <label for="id_advogado_responsavel">Advogado responsável</label>
+                <select id="id_advogado_responsavel" name="id_advogado_responsavel" required>
+                    <option value="">Selecione</option>
+                    {% for a in advogados %}
+                    <option value="{{ a.id }}" {% if processo and processo.id_advogado_responsavel == a.id %}selected{% endif %}>{{ a.nome }}{% if not a.ativo %} (inativo){% endif %}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% else %}
+            <input type="hidden" name="id_advogado_responsavel" value="{{ usuario_logado.id }}">
+            <div class="campo mb-0">
+                <label>Advogado responsável</label>
+                <div class="flex-row">
+                    <span class="avatar">{{ usuario_logado.nome|iniciais }}</span>
+                    <span>{{ usuario_logado.nome }} (você)</span>
+                </div>
+                <div class="ajuda">Somente o administrador pode transferir um processo para outro advogado.</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="secao-bloco">
+            <div class="secao-titulo">Informações adicionais</div>
+            <div class="campo mb-0">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" name="observacoes" rows="3">{{ processo.observacoes if processo else '' }}</textarea>
+            </div>
+        </div>
+
+        <div class="acoes-form">
+            <a class="btn secundario" href="{{ url_for('detalhe_processo', processo_id=processo.id) if processo else url_for('listar_processos') }}">Cancelar</a>
+            <button class="btn" type="submit">{{ 'Salvar alterações' if processo else 'Cadastrar processo' }}</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

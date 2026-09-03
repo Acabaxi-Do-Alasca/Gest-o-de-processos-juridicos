@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Configurações · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Configurações</h1>
+        <div class="subtitulo">Preferências e informações do sistema.</div>
+    </div>
+</div>
+
+<form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="card">
+        <div class="secao-titulo">Geral</div>
+        <div class="campo">
+            <label for="nome_instituicao">Nome da instituição</label>
+            <input type="text" id="nome_instituicao" name="nome_instituicao" value="{{ config.nome_instituicao }}" required>
+        </div>
+        <div class="campo mb-0">
+            <label for="nome_sistema">Nome do sistema</label>
+            <input type="text" id="nome_sistema" name="nome_sistema" value="{{ config.nome_sistema }}" required>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="secao-titulo">Encarregado de Dados (DPO) — art. 41 da LGPD</div>
+        <p class="celula-secundaria" style="margin-bottom: var(--s4);">
+            Exibido publicamente na <a href="{{ url_for('privacidade') }}" target="_blank">Política de Privacidade</a>,
+            como exige a LGPD para órgãos do Poder Público.
+        </p>
+        <div class="campo">
+            <label for="encarregado_nome">Nome do Encarregado</label>
+            <input type="text" id="encarregado_nome" name="encarregado_nome" value="{{ config.encarregado_nome }}" required>
+        </div>
+        <div class="campo mb-0">
+            <label for="encarregado_contato">Contato (e-mail ou telefone)</label>
+            <input type="text" id="encarregado_contato" name="encarregado_contato" value="{{ config.encarregado_contato }}" required>
+        </div>
+        <div class="acoes-form">
+            <button class="btn" type="submit">Salvar alterações</button>
+        </div>
+    </div>
+</form>
+
+<div class="card">
+    <div class="secao-titulo">Segurança</div>
+    <div class="info-lista">
+        <div class="item-info flex-row justify-between">
+            <div class="valor">Registro de atividades (log de autoria)</div>
+            <span class="badge badge-ativo"><span class="dot"></span>Ativado</span>
+        </div>
+        <div class="item-info flex-row justify-between">
+            <div class="valor">Controle de acesso por perfil</div>
+            <span class="badge badge-ativo"><span class="dot"></span>Ativado</span>
+        </div>
+        <div class="item-info flex-row justify-between">
+            <div class="valor">Senhas armazenadas com hash criptográfico</div>
+            <span class="badge badge-ativo"><span class="dot"></span>Ativado</span>
+        </div>
+        <div class="item-info flex-row justify-between">
+            <div class="valor">Ver log completo de auditoria</div>
+            <a class="btn pequeno secundario" href="{{ url_for('listar_auditoria') }}">Abrir auditoria</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

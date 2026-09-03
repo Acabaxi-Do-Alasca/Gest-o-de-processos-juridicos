@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Erro inesperado · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+<div class="pagina-estado">
+    <div class="icone-estado">!</div>
+    <h1>Algo deu errado</h1>
+    <p>
+        Ocorreu um erro inesperado ao processar sua solicitação. Nada foi salvo. Tente
+        novamente e, se o problema continuar, avise o administrador do sistema.
+    </p>
+    <a class="btn secundario mt-4" href="{{ url_for('dashboard') if usuario_logado else url_for('login') }}">&larr; Voltar</a>
+</div>
+{% endblock %}

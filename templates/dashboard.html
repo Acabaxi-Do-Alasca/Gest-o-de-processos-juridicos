@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Visão geral · {{ config_geral.nome_sistema }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Bom dia, {{ primeiro_nome }}</h1>
+        <div class="subtitulo">Acompanhe os processos e prioridades do setor jurídico.</div>
+    </div>
+    <div class="acoes-topo">
+        <a class="btn" href="{{ url_for('novo_processo') }}">+ Novo processo</a>
+    </div>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="value">{{ total }}</div>
+        <div class="label">{{ 'Processos cadastrados' if usuario_logado.tipo_usuario == 'administrador' else 'Meus processos' }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">{{ em_andamento }}</div>
+        <div class="label">{{ 'Processos em andamento' if usuario_logado.tipo_usuario == 'administrador' else 'Em andamento' }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="value">{{ proximos }}</div>
+        <div class="label">Prazos próximos</div>
+    </div>
+    <div class="stat-card">
+        <div class="value destaque-vencido">{{ vencidos }}</div>
+        <div class="label">Prazos vencidos</div>
+        {% if vencidos > 0 %}
+        <div class="tag-atencao"><span class="dot"></span> Requer atenção</div>
+        {% endif %}
+    </div>
+    <div class="stat-card">
+        <div class="value">{{ encerrados }}</div>
+        <div class="label">Processos encerrados</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header-row">
+        <h2>Prioridades de hoje</h2>
+        <a class="muted" href="{{ url_for('listar_prazos') }}">Ver todos os prazos →</a>
+    </div>
+    {% if prioridades %}
+    <table class="tabela-leve">
+        <thead>
+            <tr><th>Processo</th><th>Responsável</th><th>Prazo</th><th>Situação</th></tr>
+        </thead>
+        <tbody>
+            {% for p in prioridades %}
+            <tr>
+                <td>
+                    <a class="celula-principal" href="{{ url_for('detalhe_processo', processo_id=p.processo_id) }}">{{ p.numero_processo }}</a>
+                    <span class="celula-secundaria">{{ p.assunto }}</span>
+                </td>
+                <td>{{ p.responsavel_nome }}</td>
+                <td>{{ p.prazo_label }}</td>
+                <td><span class="status {{ p.classe }}"><span class="dot"></span>{{ p.rotulo }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="muted">Nenhum prazo em aberto no momento. Tudo em dia.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-header-row">
+        <h2>Movimentações recentes</h2>
+        <a class="muted" href="{{ url_for('listar_movimentacoes') }}">Ver todas →</a>
+    </div>
+    {% if ultimas_movimentacoes %}
+    <table class="tabela-leve">
+        <thead>
+            <tr><th>Data</th><th>Processo</th><th>Descrição</th><th>Registrado por</th></tr>
+        </thead>
+        <tbody>
+            {% for m in ultimas_movimentacoes %}
+            <tr>
+                <td>{{ m.data|data_extenso }}</td>
+                <td><a class="celula-principal" href="{{ url_for('detalhe_processo', processo_id=m.id_processo) }}">{{ m.numero_processo }}</a></td>
+                <td>{{ m.descricao }}</td>
+                <td>{{ m.usuario_nome }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="muted">Nenhuma movimentação registrada ainda.</p>
+    {% endif %}
+</div>
+{% endblock %}
