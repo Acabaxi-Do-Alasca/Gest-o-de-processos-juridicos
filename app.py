@@ -1,6 +1,7 @@
 import os
 import secrets
 import sqlite3
+from datetime import date
 from pathlib import Path
 
 from flask import Flask, g, render_template, request, session
@@ -120,6 +121,7 @@ def register_hooks(app):
             "ultimo_acesso_anterior": formatar_datahora(anterior) if anterior else None,
             "entidades_auditoria": ENTIDADE_LABELS,
             "csrf_token": obter_csrf_token(),
+            "hoje": date.today().isoformat(),
         }
 
     @app.errorhandler(403)

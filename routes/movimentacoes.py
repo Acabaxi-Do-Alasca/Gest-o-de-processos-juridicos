@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from flask import flash, g, redirect, render_template, request, url_for
 
@@ -77,7 +77,8 @@ def register(app):
                 else:
                     verificar_acesso_processo(processo_alvo)
                     try:
-                        parse_data(data_mov)
+                        if parse_data(data_mov) > date.today():
+                            erro = "A data da movimentação não pode ser uma data futura."
                     except ValueError:
                         erro = "Data da movimentação inválida."
             if erro:
@@ -123,7 +124,8 @@ def register(app):
                 erro = "Preencha todos os campos da movimentação."
             else:
                 try:
-                    parse_data(data_mov)
+                    if parse_data(data_mov) > date.today():
+                        erro = "A data da movimentação não pode ser uma data futura."
                 except ValueError:
                     erro = "Data da movimentação inválida."
             if erro:
@@ -158,6 +160,7 @@ def register(app):
         processo = buscar_processo_ou_404(db, movimentacao["id_processo"])
         if processo is not None:
             verificar_acesso_processo(processo)
+        db.execute("UPDATE documento SET id_movimentacao = NULL WHERE id_movimentacao = ?", (movimentacao_id,))
         db.execute("DELETE FROM movimentacao WHERE id = ?", (movimentacao_id,))
         registrar_log(
             db, "excluir", "movimentacao", movimentacao_id,

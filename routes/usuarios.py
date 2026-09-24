@@ -2,7 +2,7 @@ from flask import flash, g, redirect, render_template, request, url_for
 from werkzeug.security import generate_password_hash
 
 import db as db_module
-from helpers import registrar_log
+from helpers import registrar_log, validar_senha_forte
 from seguranca import admin_required
 
 
@@ -29,6 +29,8 @@ def register(app):
                 erro = "Preencha todos os campos obrigatórios."
             elif tipo_usuario not in ("administrador", "advogado"):
                 erro = "Tipo de usuário inválido."
+            else:
+                erro = validar_senha_forte(senha)
 
             db = db_module.get_db()
             if erro is None:
@@ -134,8 +136,9 @@ def register(app):
 
         nova_senha = request.form.get("nova_senha", "")
         confirmar_senha = request.form.get("confirmar_senha", "")
-        if len(nova_senha) < 6:
-            flash("A nova senha deve ter pelo menos 6 caracteres.", "erro")
+        erro_senha = validar_senha_forte(nova_senha)
+        if erro_senha:
+            flash(erro_senha, "erro")
         elif nova_senha != confirmar_senha:
             flash("A confirmação de senha não confere.", "erro")
         else:

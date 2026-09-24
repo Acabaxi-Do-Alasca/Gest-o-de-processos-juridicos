@@ -21,7 +21,33 @@ document.addEventListener("DOMContentLoaded", () => {
         const botao = evento.target.querySelector('button[type="submit"]');
         if (botao) botao.disabled = true;
     });
+
+    const campoNumeroProcesso = document.getElementById("numero_processo");
+    if (campoNumeroProcesso) {
+        aplicarMascaraProcesso(campoNumeroProcesso);
+        campoNumeroProcesso.addEventListener("input", () => aplicarMascaraProcesso(campoNumeroProcesso));
+    }
 });
+
+// Máscara do número CNJ do processo: NNNNNNN-DD.AAAA.J.TR.OOOO (20 dígitos).
+function aplicarMascaraProcesso(campo) {
+    const digitos = campo.value.replace(/\D/g, "").slice(0, 20);
+    const partes = [
+        digitos.slice(0, 7),
+        digitos.slice(7, 9),
+        digitos.slice(9, 13),
+        digitos.slice(13, 14),
+        digitos.slice(14, 16),
+        digitos.slice(16, 20),
+    ];
+    let formatado = partes[0];
+    if (partes[1]) formatado += "-" + partes[1];
+    if (partes[2]) formatado += "." + partes[2];
+    if (partes[3]) formatado += "." + partes[3];
+    if (partes[4]) formatado += "." + partes[4];
+    if (partes[5]) formatado += "." + partes[5];
+    campo.value = formatado;
+}
 
 // Reabilita botões de envio ao voltar para a página pelo histórico do navegador
 // (bfcache), para não deixar um formulário preso "desabilitado para sempre".

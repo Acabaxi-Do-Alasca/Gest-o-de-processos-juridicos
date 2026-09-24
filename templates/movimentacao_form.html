@@ -20,7 +20,7 @@
             </div>
             <div class="campo mb-0">
                 <label for="data">Data</label>
-                <input type="date" id="data" name="data" value="{{ movimentacao.data if movimentacao else '' }}" required>
+                <input type="date" id="data" name="data" value="{{ movimentacao.data if movimentacao else '' }}" max="{{ hoje }}" required>
             </div>
 
             <div class="acoes-form">

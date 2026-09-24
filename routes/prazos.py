@@ -216,6 +216,7 @@ def register(app):
         processo = buscar_processo_ou_404(db, prazo["id_processo"])
         if processo is not None:
             verificar_acesso_processo(processo)
+        db.execute("UPDATE documento SET id_prazo = NULL WHERE id_prazo = ?", (prazo_id,))
         db.execute("DELETE FROM prazo WHERE id = ?", (prazo_id,))
         registrar_log(db, "excluir", "prazo", prazo_id, f"Prazo '{prazo['descricao']}' excluído.")
         db.commit()

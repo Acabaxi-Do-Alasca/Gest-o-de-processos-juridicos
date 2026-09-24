@@ -16,7 +16,8 @@
             {% if not usuario %}
             <div class="campo">
                 <label for="senha">Senha inicial</label>
-                <input type="password" id="senha" name="senha" required>
+                <input type="password" id="senha" name="senha" required minlength="8">
+                <div class="ajuda">Mínimo de 8 caracteres, com letra maiúscula, minúscula, número e caractere especial.</div>
             </div>
             {% else %}
             <div class="campo">

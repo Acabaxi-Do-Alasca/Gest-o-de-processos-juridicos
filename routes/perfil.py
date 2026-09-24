@@ -2,7 +2,7 @@ from flask import flash, g, redirect, render_template, request, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import db as db_module
-from helpers import registrar_log
+from helpers import registrar_log, validar_senha_forte
 from seguranca import login_required
 
 
@@ -23,10 +23,10 @@ def register(app):
         erro = None
         if not check_password_hash(g.usuario["senha_hash"], senha_atual):
             erro = "Senha atual incorreta."
-        elif len(nova_senha) < 6:
-            erro = "A nova senha deve ter pelo menos 6 caracteres."
         elif nova_senha != confirmar_senha:
             erro = "A confirmação de senha não confere."
+        else:
+            erro = validar_senha_forte(nova_senha)
 
         if erro:
             flash(erro, "erro")

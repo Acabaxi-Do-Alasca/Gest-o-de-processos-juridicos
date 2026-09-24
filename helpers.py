@@ -1,4 +1,5 @@
 """Filtros Jinja, utilitários de data e consultas de domínio usados por várias rotas."""
+import re
 from datetime import date, datetime
 
 from flask import flash, g
@@ -6,6 +7,32 @@ from flask import flash, g
 from seguranca import eh_admin
 
 PRAZO_ALERTA_DIAS = 5  # a partir de quantos dias de antecedência um prazo é "próximo do vencimento"
+
+SENHA_TAMANHO_MINIMO = 8
+NUMERO_PROCESSO_RE = re.compile(r"^\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4}$")
+
+
+def validar_senha_forte(senha):
+    """Política de senha (Seção 6.3): mínimo de caracteres + minúscula, maiúscula, número e
+    caractere especial. Retorna a mensagem de erro, ou None se a senha atende à política."""
+    if len(senha) < SENHA_TAMANHO_MINIMO:
+        return f"A senha deve ter pelo menos {SENHA_TAMANHO_MINIMO} caracteres."
+    if not re.search(r"[a-z]", senha):
+        return "A senha deve conter pelo menos uma letra minúscula."
+    if not re.search(r"[A-Z]", senha):
+        return "A senha deve conter pelo menos uma letra maiúscula."
+    if not re.search(r"[0-9]", senha):
+        return "A senha deve conter pelo menos um número."
+    if not re.search(r"[^A-Za-z0-9]", senha):
+        return "A senha deve conter pelo menos um caractere especial."
+    return None
+
+
+def validar_numero_processo(numero):
+    """Valida o formato CNJ do número de processo: NNNNNNN-DD.AAAA.J.TR.OOOO (só números)."""
+    if not NUMERO_PROCESSO_RE.match(numero):
+        return "Número do processo inválido. Use o formato NNNNNNN-DD.AAAA.J.TR.OOOO (só números)."
+    return None
 
 SITUACOES_PROCESSO = ["Em andamento", "Aguardando providência", "Aguardando decisão", "Encerrado"]
 

@@ -30,10 +30,35 @@
                 <div class="ajuda">Formatos aceitos: PDF, DOC ou DOCX (máx. 20 MB).</div>
                 {% endif %}
             </div>
-            <div class="campo mb-0">
+            <div class="campo">
                 <label for="descricao">Descrição</label>
                 <textarea id="descricao" name="descricao" rows="3">{{ documento.descricao if documento else '' }}</textarea>
             </div>
+
+            {% if processo %}
+            <div class="campo">
+                <label for="id_movimentacao">Vincular a uma movimentação (opcional)</label>
+                <select id="id_movimentacao" name="id_movimentacao">
+                    <option value="">Nenhuma</option>
+                    {% for m in movimentacoes %}
+                    <option value="{{ m.id }}" {% if documento and documento.id_movimentacao == m.id %}selected{% endif %}>
+                        {{ m.data|data_extenso }} — {{ m.descricao }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="campo mb-0">
+                <label for="id_prazo">Vincular a um prazo (opcional)</label>
+                <select id="id_prazo" name="id_prazo">
+                    <option value="">Nenhum</option>
+                    {% for p in prazos %}
+                    <option value="{{ p.id }}" {% if documento and documento.id_prazo == p.id %}selected{% endif %}>
+                        {{ p.data_prazo|data_extenso }} — {{ p.descricao }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
 
             <div class="acoes-form">
                 <a class="btn secundario" href="{{ url_fechar }}">Cancelar</a>

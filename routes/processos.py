@@ -6,7 +6,7 @@ from flask import current_app, flash, g, redirect, render_template, request, url
 import db as db_module
 from helpers import (
     MESES_PT, SITUACOES_PROCESSO, buscar_advogados, buscar_processo_ou_404, parse_data,
-    registrar_log, status_prazo,
+    registrar_log, status_prazo, validar_numero_processo,
 )
 from seguranca import eh_admin, login_required, verificar_acesso_processo
 
@@ -185,18 +185,33 @@ def register(app):
 
         documentos = db.execute(
             """
-            SELECT documento.*, usuario.nome AS usuario_nome
-            FROM documento JOIN usuario ON usuario.id = documento.id_usuario_upload
+            SELECT documento.*, usuario.nome AS usuario_nome,
+                movimentacao.descricao AS movimentacao_descricao,
+                prazo.descricao AS prazo_descricao
+            FROM documento
+            JOIN usuario ON usuario.id = documento.id_usuario_upload
+            LEFT JOIN movimentacao ON movimentacao.id = documento.id_movimentacao
+            LEFT JOIN prazo ON prazo.id = documento.id_prazo
             WHERE documento.id_processo = ? ORDER BY documento.data_upload DESC
             """,
             (processo_id,),
         ).fetchall()
+
+        documentos_por_movimentacao = {}
+        documentos_por_prazo = {}
+        for d in documentos:
+            if d["id_movimentacao"]:
+                documentos_por_movimentacao.setdefault(d["id_movimentacao"], []).append(d)
+            if d["id_prazo"]:
+                documentos_por_prazo.setdefault(d["id_prazo"], []).append(d)
 
         return render_template(
             "processo_detail.html",
             processo=processo, aba=aba,
             proximo_prazo=proximo_prazo, ultima_movimentacao=ultima_movimentacao_row,
             prazos=prazos_com_status, movimentacoes=movimentacoes, documentos=documentos,
+            documentos_por_movimentacao=documentos_por_movimentacao,
+            documentos_por_prazo=documentos_por_prazo,
         )
 
     @app.route("/processos/<int:processo_id>/editar", methods=["GET", "POST"])
@@ -306,8 +321,13 @@ def _validar_campos_processo(campos):
             return "Preencha todos os campos obrigatórios do processo."
     if campos["situacao"] not in SITUACOES_PROCESSO:
         return "Situação de processo inválida."
+    erro_numero = validar_numero_processo(campos["numero_processo"])
+    if erro_numero:
+        return erro_numero
     try:
-        parse_data(campos["data_entrada"])
+        data_entrada = parse_data(campos["data_entrada"])
     except ValueError:
         return "Data de entrada inválida."
+    if data_entrada > date.today():
+        return "A data de entrada não pode ser uma data futura."
     return None

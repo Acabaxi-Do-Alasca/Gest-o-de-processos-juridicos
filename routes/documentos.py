@@ -65,6 +65,38 @@ def _salvar_arquivo(arquivo, nome_original):
     return nome_arquivo, os.path.getsize(caminho)
 
 
+def _movimentacoes_do_processo(db, processo_id):
+    return db.execute(
+        "SELECT id, data, descricao FROM movimentacao WHERE id_processo = ? ORDER BY data DESC, id DESC",
+        (processo_id,),
+    ).fetchall()
+
+
+def _prazos_do_processo(db, processo_id):
+    return db.execute(
+        "SELECT id, data_prazo, descricao FROM prazo WHERE id_processo = ? ORDER BY data_prazo",
+        (processo_id,),
+    ).fetchall()
+
+
+def _ler_vinculo(db, form, campo, tabela, processo_id):
+    """Lê um vínculo opcional (movimentação ou prazo) do formulário, validando que pertence
+    ao mesmo processo do documento — evita vincular a um registro de outro processo."""
+    valor = form.get(campo, "").strip()
+    if not valor:
+        return None, None
+    try:
+        valor_id = int(valor)
+    except ValueError:
+        return None, "Vínculo inválido."
+    registro = db.execute(
+        f"SELECT id FROM {tabela} WHERE id = ? AND id_processo = ?", (valor_id, processo_id)
+    ).fetchone()
+    if registro is None:
+        return None, "O item selecionado não pertence a este processo."
+    return valor_id, None
+
+
 def register(app):
     @app.route("/documentos")
     @login_required
@@ -126,6 +158,12 @@ def register(app):
             elif _arquivo_vazio(arquivo):
                 erro = "O arquivo selecionado está vazio."
 
+            id_movimentacao = id_prazo = None
+            if not erro:
+                id_movimentacao, erro = _ler_vinculo(db, request.form, "id_movimentacao", "movimentacao", id_processo)
+            if not erro:
+                id_prazo, erro = _ler_vinculo(db, request.form, "id_prazo", "prazo", id_processo)
+
             if erro:
                 flash(erro, "erro")
             else:
@@ -135,11 +173,12 @@ def register(app):
                     """
                     INSERT INTO documento
                         (id_processo, nome_documento, tipo_documento, descricao, data_upload,
-                         id_usuario_upload, nome_arquivo, tamanho_bytes)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                         id_usuario_upload, nome_arquivo, tamanho_bytes, id_movimentacao, id_prazo)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (id_processo, nome_documento, tipo_documento, descricao,
-                     date.today().isoformat(), g.usuario["id"], nome_arquivo, tamanho_bytes),
+                     date.today().isoformat(), g.usuario["id"], nome_arquivo, tamanho_bytes,
+                     id_movimentacao, id_prazo),
                 )
                 registrar_log(
                     db, "criar", "documento", cur.lastrowid,
@@ -149,7 +188,12 @@ def register(app):
                 flash("Documento registrado com sucesso.", "sucesso")
                 return redirect(url_for("detalhe_processo", processo_id=id_processo, aba="documentos"))
 
-        return render_template("documento_form.html", processo=processo, processos=processos, documento=None)
+        movimentacoes = _movimentacoes_do_processo(db, processo["id"]) if processo else []
+        prazos = _prazos_do_processo(db, processo["id"]) if processo else []
+        return render_template(
+            "documento_form.html", processo=processo, processos=processos, documento=None,
+            movimentacoes=movimentacoes, prazos=prazos,
+        )
 
     @app.route("/documentos/<int:documento_id>/baixar")
     @login_required
@@ -191,6 +235,14 @@ def register(app):
             elif nome_original and _arquivo_vazio(arquivo):
                 erro = "O arquivo selecionado está vazio."
 
+            id_movimentacao = id_prazo = None
+            if not erro:
+                id_movimentacao, erro = _ler_vinculo(
+                    db, request.form, "id_movimentacao", "movimentacao", documento["id_processo"]
+                )
+            if not erro:
+                id_prazo, erro = _ler_vinculo(db, request.form, "id_prazo", "prazo", documento["id_processo"])
+
             if erro:
                 flash(erro, "erro")
             else:
@@ -204,10 +256,11 @@ def register(app):
                     """
                     UPDATE documento
                     SET nome_documento = ?, tipo_documento = ?, descricao = ?,
-                        nome_arquivo = ?, tamanho_bytes = ?
+                        nome_arquivo = ?, tamanho_bytes = ?, id_movimentacao = ?, id_prazo = ?
                     WHERE id = ?
                     """,
-                    (nome_documento, tipo_documento, descricao, nome_arquivo, tamanho_bytes, documento_id),
+                    (nome_documento, tipo_documento, descricao, nome_arquivo, tamanho_bytes,
+                     id_movimentacao, id_prazo, documento_id),
                 )
                 registrar_log(
                     db, "editar", "documento", documento_id,
@@ -219,8 +272,11 @@ def register(app):
                     "detalhe_processo", processo_id=documento["id_processo"], aba="documentos"
                 ))
 
+        movimentacoes = _movimentacoes_do_processo(db, documento["id_processo"])
+        prazos = _prazos_do_processo(db, documento["id_processo"])
         return render_template(
-            "documento_form.html", processo=processo, processos=None, documento=documento
+            "documento_form.html", processo=processo, processos=None, documento=documento,
+            movimentacoes=movimentacoes, prazos=prazos,
         )
 
     @app.route("/documentos/<int:documento_id>/excluir", methods=["POST"])

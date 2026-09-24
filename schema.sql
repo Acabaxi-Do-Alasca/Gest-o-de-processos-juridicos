@@ -65,7 +65,9 @@ CREATE TABLE documento (
     data_upload TEXT NOT NULL,
     id_usuario_upload INTEGER NOT NULL REFERENCES usuario(id),
     nome_arquivo TEXT,
-    tamanho_bytes INTEGER
+    tamanho_bytes INTEGER,
+    id_movimentacao INTEGER REFERENCES movimentacao(id),
+    id_prazo INTEGER REFERENCES prazo(id)
 );
 
 -- Registro de auditoria (LGPD arts. 37 e 46-49; item "Segurança" do enunciado):
